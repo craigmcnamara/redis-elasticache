@@ -6,8 +6,8 @@ require 'redis/elasticache/version'
 Gem::Specification.new do |spec|
   spec.name          = "redis-elasticache"
   spec.version       = Redis::Elasticache::VERSION
-  spec.authors       = ["Craig McNamara"]
-  spec.email         = ["craig@caring.com"]
+  spec.authors       = ["Craig McNamara", "Eddy Kim"]
+  spec.email         = ["craig@caring.com", "eddy.kim@dollarshaveclub.com"]
 
   spec.summary       = %q{Adds missing support for AWS Elasticache to the redis-rb gem.}
   spec.description   = %q{Enable applications to handle AWS Elasticache cluster failovers without rebooting the app.}

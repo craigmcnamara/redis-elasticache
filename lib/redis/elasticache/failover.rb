@@ -5,8 +5,8 @@ class Redis
   module Connection
     class Ruby
 
-      RDS_READONLY_ERROR = "READONLY You can't write against a read only slave.".freeze
-      RDS_READONLY_MESSAGE = "A write operation was issued to an RDS slave node.".freeze
+      ELASTICACHE_READONLY_ERROR = "READONLY You can't write against a read only slave.".freeze
+      ELASTICACHE_READONLY_MESSAGE = "A write operation was issued to an ELASTICACHE slave node.".freeze
 
       # Amazon RDS supports failover, but because it uses DNS magic to point to
       # the master node, TCP connections are not disconnected and we can issue
@@ -17,8 +17,8 @@ class Redis
       # correct node as the master accepting writes.
       def format_error_reply(line)
         error_message = line.strip
-        if error_message == RDS_READONLY_ERROR
-          raise BaseConnectionError, RDS_READONLY_MESSAGE
+        if error_message == ELASTICACHE_READONLY_ERROR
+          raise BaseConnectionError, ELASTICACHE_READONLY_MESSAGE
         else
           CommandError.new(error_message)
         end
