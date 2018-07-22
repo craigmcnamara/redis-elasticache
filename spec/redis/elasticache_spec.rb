@@ -5,19 +5,34 @@ describe Redis::Elasticache do
     expect(Redis::Elasticache::VERSION).not_to be nil
   end
 
-  context 'Redis::Connection::Ruby#format_error_reply failover patch' do
-
-    let(:connection) { Redis::Connection::Ruby.new nil }
-    let(:read_only_response) { "READONLY You can't write against a read only slave." }
-
-    it 'raises `BaseConnectionError` when a write occurs against a slave node' do
-      expect { connection.format_error_reply read_only_response }.to raise_error Redis::BaseConnectionError
+  module CommandError
+    def read
+      raise Redis::CommandError.new("Derp.")
     end
-
-    it 'returns a `CommandError` in all other cases' do
-      expect(connection.format_error_reply 'Derp').to be_a Redis::CommandError
-    end
-
   end
 
+  module ReadOnlyError
+    def read
+      raise Redis::CommandError.new("READONLY You can't write against a read only slave.")
+    end
+  end
+
+  context 'Redis::Connection::* patch' do
+    let(:driver) { Class.new {} }
+    let(:connection) { driver.new }
+
+    it 'converts CommandError to BaseConnectionError when a write occurs against a slave node' do
+      driver.send(:prepend, ReadOnlyError)
+      driver.send(:prepend, Redis::Elasticache::Failover)
+
+      expect { connection.read }.to raise_error(::Redis::BaseConnectionError)
+    end
+
+    it 'returns a CommandError in all other cases' do
+      driver.send(:prepend, CommandError)
+      driver.send(:prepend, Redis::Elasticache::Failover)
+
+      expect { connection.read }.to raise_error(Redis::CommandError)
+    end
+  end
 end
