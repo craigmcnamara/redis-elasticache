@@ -6,7 +6,9 @@ class Redis
     class Ruby
 
       ELASTICACHE_READONLY_ERROR = "READONLY You can't write against a read only slave.".freeze
+      ELASTICACHE_LOADING_ERROR = "LOADING Redis is loading the dataset in memory".freeze
       ELASTICACHE_READONLY_MESSAGE = "A write operation was issued to an ELASTICACHE slave node that is READONLY.".freeze
+      ELASTICACHE_LOADING_MESSAGE = "A write operation was issued to an ELASTICACHE node that was previously READONLY and is now LOADING.".freeze
 
       # Amazon RDS supports failover, but because it uses DNS magic to point to
       # the master node, TCP connections are not disconnected and we can issue
@@ -19,6 +21,8 @@ class Redis
         error_message = line.strip
         if error_message == ELASTICACHE_READONLY_ERROR
           raise BaseConnectionError, ELASTICACHE_READONLY_MESSAGE
+        elsif error_message == ELASTICACHE_LOADING_ERROR
+          raise BaseConnectionError, ELASTICACHE_LOADING_MESSAGE
         else
           CommandError.new(error_message)
         end
