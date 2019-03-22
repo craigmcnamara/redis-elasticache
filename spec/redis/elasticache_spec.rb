@@ -8,9 +8,9 @@ describe Redis::Elasticache do
   context 'Redis::Connection::Ruby#format_error_reply failover patch' do
 
     let(:connection) { Redis::Connection::Ruby.new nil }
-    let(:read_only_response) { "READONLY You can't write against a read only slave." }
+    let(:read_only_response) { "READONLY You can't write against a read only replica." }
 
-    it 'raises `BaseConnectionError` when a write occurs against a slave node' do
+    it 'raises `BaseConnectionError` when a write occurs against a replica node' do
       expect { connection.format_error_reply read_only_response }.to raise_error Redis::BaseConnectionError
     end
 
