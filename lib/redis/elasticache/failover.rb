@@ -4,9 +4,8 @@ class Redis
 
   module Connection
     class Ruby
-
-      ELASTICACHE_READONLY_ERROR = "READONLY You can't write against a read only replica.".freeze
-      ELASTICACHE_LOADING_ERROR = "LOADING Redis is loading the dataset in memory".freeze
+      ELASTICACHE_READONLY_ERROR_PREFIX = "READONLY".freeze
+      ELASTICACHE_LOADING_ERROR_PREFIX = "LOADING".freeze
       ELASTICACHE_READONLY_MESSAGE = "A write operation was issued to an ELASTICACHE replica node that is READONLY.".freeze
       ELASTICACHE_LOADING_MESSAGE = "A write operation was issued to an ELASTICACHE node that was previously READONLY and is now LOADING.".freeze
 
@@ -19,15 +18,19 @@ class Redis
       # correct node as the master accepting writes.
       def format_error_reply(line)
         error_message = line.strip
-        if error_message == ELASTICACHE_READONLY_ERROR
+        if error_message_has_prefix?(ELASTICACHE_READONLY_ERROR_PREFIX, error_message)
           raise BaseConnectionError, ELASTICACHE_READONLY_MESSAGE
-        elsif error_message == ELASTICACHE_LOADING_ERROR
+        elsif error_message_has_prefix?(ELASTICACHE_LOADING_ERROR_PREFIX, error_message)
           raise BaseConnectionError, ELASTICACHE_LOADING_MESSAGE
         else
           CommandError.new(error_message)
         end
       end
 
+      private
+      def error_message_has_prefix?(prefix, error_message)
+        (error_message.slice(0, prefix.length) === prefix)
+      end
     end
   end
 end
